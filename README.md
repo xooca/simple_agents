@@ -1,6 +1,8 @@
-# Agentic Orchestrator
+# Simple Agents
 
-Agentic Orchestrator is a Python framework designed to simplify the creation, management, and orchestration of AI agents and complex data processing workflows. It leverages LangChain for core functionalities and provides a structured approach to building sophisticated RAG (Retrieval Augmented Generation) systems, multi-agent environments, and data-driven applications.
+Simple Agents is a Python framework designed to simplify the creation, management, and orchestration of AI agents and complex data processing workflows. It leverages LangChain for core functionalities and provides a structured approach to building sophisticated RAG (Retrieval Augmented Generation) systems, multi-agent environments, and data-driven applications.
+
+**NOTE: This Repository is under Development. Many Functionalities are yet to come up. Stay Tuned!!
 
 ## Features
 
@@ -130,12 +132,14 @@ README.md                   # This file
 ```python
 # main.py - Example usage of the package
 
-from agentic_orchestrator.config import settings
-from agentic_orchestrator.utils.llm_client import LLMClient
-from agentic_orchestrator.utils.embedding_client import EmbeddingClient
-from agentic_orchestrator.data_storage.stores import ChromaStore
-from agentic_orchestrator.retrievers.retriever_factory import RetrieverFactory
-from agentic_orchestrator.orchestrator.workflow import create_simple_rag_runnable # Corrected import
+from simple_agents.config import settings
+from simple_agents.utils.llm_client import LLMClient
+from simple_agents.utils.embedding_client import EmbeddingClient
+from simple_agents.data_ingestion.data_loader_factory import DataLoaderFactory
+from simple_agents.data_storage.stores import ChromaStore
+from simple_agents.data_storage.writer import DataWriter
+from simple_agents.retrievers.retriever_factory import RetrieverFactory
+from simple_agents.orchestrator.workflow import create_simple_rag_runnable # Corrected import
 
 # 1. Initialize core clients based on config
 llm = LLMClient.get_client(provider=settings.LLM_PROVIDER, model_name=settings.CHAT_MODEL_NAME)
