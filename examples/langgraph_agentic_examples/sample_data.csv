@@ -1,0 +1,4 @@
+id,text_content,category
+1,"The quick brown fox jumps over the lazy dog. This sentence contains all letters of the alphabet.","animals"
+2,"LangChain is a framework for developing applications powered by large language models. It simplifies agent creation.","technology"
+3,"Paris is the capital of France, known for the Eiffel Tower and Louvre Museum. It is a major European city.","places"
