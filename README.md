@@ -36,11 +36,13 @@ Simple Agents is a Python framework designed to simplify the creation, managemen
 *   **Multi-Agent System Framework**:
     *   `Agent` abstract base class.
     *   `OpenAIToolAgent` concrete implementation using OpenAI's tool-calling.
-    *   `MultiAgentOrchestrator` to manage a collection of agents and facilitate agent-to-agent communication (agents can be exposed as tools to each other).
+    *   `MultiAgentOrchestrator` (LCEL-based) and `MultiAgentOrchestrator_LG` (LangGraph-based) to manage agent interactions.
 *   **Environment Management**:
-    *   `Environment` class to encapsulate a group of agents, tools, and their orchestration logic for specific scenarios or tasks, promoting reusability.
+    *   `Environment` (LCEL-based) and `Environment_LG` (LangGraph-based) classes to encapsulate agent groups and orchestration for specific scenarios.
 *   **Model Context Protocol (MCP)**: Adherence through structured prompting and context management within workflows and agents.
 *   **Agent-to-Agent Protocol**: Enabled by agents exposing themselves as tools, managed by the orchestrator.
+*   **LangGraph Integration**:
+    *   LangGraph versions of multi-agent orchestrator (`MultiAgentOrchestrator_LG`) and complex workflows (e.g., `create_research_assistant_workflow_lg`) for stateful, graph-based execution.
 
 ## Project Structure
 
@@ -55,9 +57,12 @@ agentic_orchestrator/
 │   ├── stores.py           # Concrete DataStore implementations (Chroma, FAISS, etc.)
 │   └── writer.py           # DataWriter for document ingestion
 ├── orchestrator/
-│   ├── environment.py      # Environment class for managing agent scenarios
-│   ├── executor.py         # Agent, OpenAIToolAgent, MultiAgentOrchestrator
-│   └── workflow.py         # Factory functions for creating Runnable workflows
+│   ├── environment.py      # LCEL-based Environment class
+│   ├── environment_lg.py   # LangGraph-based Environment class
+│   ├── executor.py         # Agent, OpenAIToolAgent, LCEL-based MultiAgentOrchestrator
+│   ├── executor_lg.py      # LangGraph-based MultiAgentOrchestrator_LG
+│   ├── workflow.py         # LCEL-based workflow factories
+│   └── workflow_lg.py      # LangGraph-based workflow factories
 ├── retrievers/
 │   └── retriever_factory.py # Factory for creating various retriever types
 ├── utils/
@@ -111,6 +116,7 @@ README.md                   # This file
     pydantic
     pydantic-settings
     python-dotenv
+    langgraph
     # Add other specific loaders or tools as needed
     # e.g., beautifulsoup4, unstructured, cohere
     ```
