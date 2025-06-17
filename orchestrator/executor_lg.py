@@ -1,7 +1,7 @@
 # agentic_orchestrator/orchestrator/executor_lg.py
 from typing import TypedDict, List, Dict, Optional, Annotated, Sequence
 import operator
-
+import asyncio
 from langchain_core.language_models import BaseLanguageModel
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, ToolMessage
 from langgraph.graph import StateGraph, END, START
@@ -168,4 +168,69 @@ class MultiAgentOrchestrator_LG:
         final_state = self.graph.invoke(initial_state)
         return {"output": final_state.get("final_output") or (final_state["messages"][-1].content if final_state["messages"] else "No output"), "full_state": final_state}
 
-# Add a __main__ block here for testing if desired.
+if __name__ == '__main__':
+    # This __main__ block demonstrates the LangGraph-based multi-agent setup.
+    from langchain_openai import ChatOpenAI
+    from langchain_core.tools import tool
+    from .executor import OpenAIToolAgent # Re-use OpenAIToolAgent definition
+
+    # Dummy LLM for testing if OPENAI_API_KEY is not set
+    try:
+        llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
+        llm.invoke("Hello") # Test API key
+    except Exception:
+        print("OpenAI API key not valid or not set. Using a dummy LLM for __main__ example.")
+        from langchain_core.outputs import LLMResult
+        class DummyLLM(BaseLanguageModel):
+            def invoke(self, input: Any, config = None, *, stop = None, **kwargs: Any) -> str: return f"LLM mock response to: {input}"
+            async defainvoke(self, input: Any, config = None, *, stop = None, **kwargs: Any) -> str: return f"LLM mock async response to: {input}"
+            def _generate(self, prompts: List[str], stop = None, **kwargs: Any) -> LLMResult: return LLMResult(generations=[[{"text": f"LLM mock generation for {p}"} for p in prompts]])
+            @property
+            def _llm_type(self) -> str: return "dummy"
+        llm = DummyLLM()
+
+    @tool
+    def get_city_population(city_name: str) -> str:
+        """Gets the approximate population for a specified city."""
+        if "new york" in city_name.lower():
+            return "The population of New York City is approximately 8.5 million."
+        elif "london" in city_name.lower():
+            return "The population of London is approximately 9 million."
+        return f"Sorry, I don't have population data for {city_name}."
+
+    # Agent 1: Demographics Expert
+    demographics_agent = OpenAIToolAgent(
+        name="DemographicsExpert",
+        llm=llm,
+        tools=[get_city_population],
+        system_message="You are a demographics expert. You provide population information using your tools."
+    )
+
+    # Agent 2: General Querier (could potentially use DemographicsExpert if routing was more complex)
+    # For this simple LangGraph example, the orchestrator will run one agent.
+    # More complex routing would be needed for the GeneralQuerier to decide to call DemographicsExpert.
+    # The current _routing_node in MultiAgentOrchestrator_LG defaults to END after one turn.
+    general_querier_agent = OpenAIToolAgent(
+        name="GeneralQuerier",
+        llm=llm,
+        tools=[], # In a more complex setup, this might get DemographicsExpert.as_tool()
+        system_message="You are a general querier. You try to answer questions. If a specialized agent is available and relevant, you should indicate that its use would be appropriate."
+    )
+
+    # Orchestrator_LG
+    # Note: The current MultiAgentOrchestrator_LG's routing is very basic (ends after one turn).
+    # It doesn't yet implement dynamic routing to other agents based on LLM decisions within the graph.
+    # The agents passed here are available in the state, but the graph logic dictates flow.
+    orchestrator_lg = MultiAgentOrchestrator_LG(
+        agents=[demographics_agent, general_querier_agent],
+        max_turns=3 # Allow a few turns, though current routing ends early
+    )
+
+    print("\n--- Running LangGraph Multi-Agent Orchestrator Test ---")
+    query = "What is the population of London?"
+    
+    # Start with the DemographicsExpert
+    response = orchestrator_lg.run(initial_agent_name="DemographicsExpert", input_query=query)
+    print(f"\nUser Query: {query}")
+    print(f"Orchestrator_LG Response (DemographicsExpert): {response.get('output')}")
+    # print(f"Full final state: {response.get('full_state')}")
